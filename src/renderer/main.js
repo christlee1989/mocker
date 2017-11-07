@@ -5,7 +5,10 @@ import router from './router'
 import store from './store'
 
 import Vuetify from 'vuetify'
+import Messager from './plugins/messager'
+
 Vue.use(Vuetify)
+Vue.use(Messager)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.config.productionTip = false
