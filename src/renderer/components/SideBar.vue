@@ -2,7 +2,7 @@
   <div class="sidebar-container">
     <div class="sidebar-title">
       <v-tooltip bottom>
-        <v-btn color="primary" slot="activator">
+        <v-btn color="primary" slot="activator" @click="importJson">
           <v-icon>get_app</v-icon>
           &nbsp;导入项目
         </v-btn>
@@ -17,7 +17,7 @@
       </v-tooltip>
     </div>
 
-    <Navbars :data="fmtProjects" v-if="projects.length" @click="navClick"></Navbars>
+    <Navbars ref="navbar" :data="fmtProjects" v-if="projects.length" @click="navClick"></Navbars>
     <div v-if="loaded && !projects.length" class="secondary--text text-xs-center body-2 noproject">暂无项目</div>
     <Loading v-if="!loaded"></Loading>
 
@@ -53,14 +53,20 @@
       projects(){
         return this.$store.state.project.projects
       },
+      services(){
+        return this.$store.state.project.services
+      },
       fmtProjects(){
         return this.projects.map(item => {
           return {
             value:item._id,
             title:item.name,
-            second:item.services || []
+            second:this.services[item._id] || []
           }
         })
+      },
+      activeService(){
+        return this.$store.state.project.activeService
       }
     },
     methods:{
@@ -68,8 +74,26 @@
         this.$emit('openConsole')
       },
       navClick(index,value,secondFlag){
-        this.$store.commit('SET_ACTIVE_PROJECT',value)
-        this.$router.push(`/home/new/${value}`)
+        if(secondFlag){
+          this.$store.commit('SET_ACTIVE_SERVICE',value)
+          this.$router.push(`/home/new_service/${value}`)
+        }else{
+          this.$store.commit('SET_ACTIVE_PROJECT',value)
+          this.$router.push(`/home/new/${value}`)
+          this.$store.dispatch('GET_SERVICES').then(res => {
+
+          }).catch(err => {
+            this.$messager.show(err,{color:'error'})
+          })
+
+        }
+      },
+      importJson(){
+        this.$store.dispatch('IMPORT_JSON').then(res => {
+          this.$messager.show('导入项目成功',{color:'success'})
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
       }
     },
     created(){
@@ -79,6 +103,11 @@
         this.loaded = true
         this.$messager.show(err,{color:'error'})
       })
+    },
+    watch:{
+      activeService(newVal,oldVal){
+        this.$refs.navbar.setSecondActive(newVal)
+      }
     }
   }
 

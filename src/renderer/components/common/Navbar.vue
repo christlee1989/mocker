@@ -7,7 +7,7 @@
             </div>
             <div class="nav-second-block" :style="{height:active === item.value ? (item.second.length || 1) * 40 + 'px' : 0}">
                 <template v-if="item.second.length">
-                  <div class="nav-second" v-for="(secondItem,secondIndex) in item.second" :class="{active:secondActive === secondItem.value}" @click="navClick(secondIndex,secondItem.value,'second')">{{secondItem.title}}</div>
+                  <div class="nav-second" v-for="(secondItem,secondIndex) in item.second" :class="{active:secondActive === secondItem._id}" @click="navClick(secondIndex,secondItem._id,'second')">{{secondItem.path}}</div>
                 </template>
                 <div class="nodata" v-else>暂无服务</div>
             </div>
@@ -55,6 +55,12 @@
             reset(){
                 this.active = ''
                 this.secondActive = ''
+            },
+            setActive(value){
+              this.active = value
+            },
+            setSecondActive(value){
+              this.secondActive = value
             }
         }
     }

@@ -5,7 +5,8 @@ import DB from '../../../dao'
 
 const state = {
   isSetting: false,
-  dataPath:Cache.get('dataPath')
+  dataPath:Cache.get('dataPath'),
+  title:'Mocker'
 }
 
 const mutations = {

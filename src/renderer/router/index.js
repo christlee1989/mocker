@@ -28,13 +28,14 @@ export default new Router({
         path:'',
         name: 'DefaultMain',
         component: DefaultMain
-      },{
+      },
+      {
         path:'new/:projectId',
         name: 'New',
         component: NewProject
       },
       {
-        path:'new_service',
+        path:'new_service/:serviceId',
         name: 'NewService',
         component: NewService
       }]

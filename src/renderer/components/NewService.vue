@@ -2,6 +2,7 @@
   <div class="new-service-container">
     <v-form v-model="valid">
       <v-select
+        box dark
         label="请求方式"
         v-model="method"
         :items="items"
@@ -9,6 +10,7 @@
         required
       ></v-select>
       <v-text-field
+        box dark
         label="服务路径"
         placeholder="例如：/service/path"
         v-model="path"
@@ -17,9 +19,10 @@
         required
       ></v-text-field>
       <v-text-field
+        box dark
         label="服务描述"
         placeholder="请用简短的文字描述该服务"
-        textarea
+        multi-line
         v-model="description"
         :rules="descRules"
         :counter="200"
@@ -30,7 +33,20 @@
     <div class="json-editor" :class="{err:!jsonValid}" ref="jsoneditor"></div>
     <div></div>
     <v-btn :disabled="!valid || !jsonValid || loading" color="primary" :loading="loading" @click="saveService">保存</v-btn>
+    <v-dialog v-if="activeService" v-model="dialog" persistent>
+      <v-btn slot="activator" flat dark color="error">删除</v-btn>
+      <v-card>
+        <v-card-title class="headline">确认删除？</v-card-title>
+        <v-card-text>点击确认将永久删除服务</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" flat @click.native="deleteService">确认</v-btn>
+          <v-btn color="darken-1" flat @click.native="dialog = false">取消</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-btn flat dark @click="resetForm">重置</v-btn>
+
   </div>
 </template>
 
@@ -72,7 +88,36 @@
           'OPTIONS',
           'TRACE'
         ],
-        method:'POST'
+        method:'POST',
+        dialog:false
+      }
+    },
+    computed:{
+      activeProject(){
+        return this.$store.state.project.activeProject
+      },
+      doc(){
+        return {
+          method:this.method,
+          path:this.path,
+          description:this.description,
+          data:this.resData,
+          pid:this.activeProject
+        }
+      },
+      serviceId(){
+        return this.$route.params.serviceId
+      },
+      services(){
+        return this.$store.state.project.services
+      },
+      activeService(){
+        return this.$store.state.project.activeService
+      },
+      activeDoc(){
+        return this.services[this.activeProject].find((doc) => {
+          return doc._id === this.activeService
+        })
       }
     },
     methods:{
@@ -96,9 +141,33 @@
         this.description = ''
         this.resData = {}
         this.editor.set({})
+        this.$store.commit('SET_ACTIVE_SERVICE','')
       },
       saveService(){
-
+        if(this.activeService){
+          console.log(this.editor.get())
+          this.$store.dispatch('UPDATE_SERVICE',{_id:this.activeService,...this.doc}).then(res => {
+            this.$messager.show('修改成功',{color:'success'})
+          }).catch(err => {
+            this.$messager.show(err,{color:'error'})
+          })
+        }else{
+          this.$store.dispatch('NEW_SERVICE',this.doc).then(res => {
+            this.$messager.show('保存成功',{color:'success'})
+            this.$router.replace(`/home/new_service/${this.activeService}`)
+          }).catch(err => {
+            this.$messager.show(err,{color:'error'})
+          })
+        }
+      },
+      deleteService(){
+        this.dialog = false
+        this.$store.dispatch('REMOVE_SERVICE',this.activeService).then(res => {
+          this.$messager.show('删除成功',{color:'success'})
+          this.$router.replace('/home/new_service/null')
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
       }
     },
     mounted(){
@@ -113,7 +182,31 @@
         onError:this.jsonEditorError
       })
       editor.set({ })
-    }
+
+      if(this.serviceId !== 'null'){
+        this.method = this.activeDoc.method
+        this.path = this.activeDoc.path
+        this.description = this.activeDoc.description
+        this.resData = this.activeDoc.data
+        this.editor.set(this.activeDoc.data)
+      }
+    },
+    beforeRouteUpdate (to, from, next) {
+      if(to.params.serviceId !== 'null'){
+        this.method = this.activeDoc.method
+        this.path = this.activeDoc.path
+        this.description = this.activeDoc.description
+        this.resData = this.activeDoc.data
+        this.editor.set(this.activeDoc.data)
+      }else{
+        this.method = 'POST'
+        this.path = ''
+        this.description = ''
+        this.resData = {}
+        this.editor.set({})
+      }
+      next()
+    },
   }
 
 </script>

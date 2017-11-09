@@ -3,6 +3,7 @@
  */
 import fs from 'fs'
 import {remote} from 'electron'
+import JsonFormat from 'format-json'
 
 export const dirExist = (dir) => {
   try {
@@ -48,3 +49,51 @@ export const openDirectory = (title,defPath,cb) => {
     cb(filePaths ? filePaths[0] : '')
   })
 }
+
+export const openReadFile = (title,defPath,cb) => {
+  remote.dialog.showOpenDialog(remote.getCurrentWindow(),{
+    title:title,
+    defaultPath:defPath,
+    properties:['openFile','multiSelections'],
+    filters:[{
+      name:'JSON',
+      extensions:['json']
+    }]
+  },filePaths => {
+    cb(filePaths)
+  })
+}
+
+export const openWriteFile = (title,defPath,cb) => {
+  remote.dialog.showSaveDialog(remote.getCurrentWindow(),{
+    title:title,
+    defaultPath:defPath,
+    filters:[{
+      name:'JSON',
+      extensions:['json']
+    }]
+  },filename => {
+    cb(filename)
+  })
+}
+
+export const writeJsonFile = (path,jsonObj,cb) => {
+  fs.writeFile(path, JsonFormat.plain(jsonObj), 'utf8', (err) => {
+    if (err){
+      cb(false)
+    }else{
+      cb(true)
+    }
+  });
+}
+
+export const readJsonFile = (path,cb) => {
+  fs.readFile(path, 'utf8', (err,data) => {
+    if (err){
+      cb(false)
+    }else{
+      cb(data)
+    }
+  });
+}
+

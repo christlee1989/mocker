@@ -2,6 +2,7 @@
   <div class="new-container">
     <v-form v-model="valid">
       <v-text-field
+        box dark
         label="项目名称"
         v-model="name"
         :rules="nameRules"
@@ -9,6 +10,7 @@
         required
       ></v-text-field>
       <v-text-field
+        box dark
         label="端口号"
         v-model="port"
         :rules="portRules"
@@ -16,7 +18,7 @@
       ></v-text-field>
       <v-text-field
         label="项目描述"
-        textarea
+        box multi-line
         v-model="desc"
         :rules="descRules"
         :counter="200"
@@ -82,7 +84,7 @@
           desc:this.desc
         }).then(res => {
           this.loading = false
-          this.$router.push('/home/new_service')
+          this.$router.push('/home/new_service/null')
         }).catch(err => {
           this.loading = false
           this.$messager.show(err,{color:'error'})
@@ -102,7 +104,7 @@
         })
       },
       addService(){
-
+        this.$router.push('/home/new_service/null')
       }
     },
     created(){
