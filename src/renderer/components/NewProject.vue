@@ -30,6 +30,18 @@
       <v-btn color="primary" @click="updateProject">保存</v-btn>
       <v-btn color="primary" @click="addService">添加服务</v-btn>
     </template>
+    <v-dialog v-show="activeProject" v-model="dialog" persistent>
+      <v-btn slot="activator" flat dark color="error">删除</v-btn>
+      <v-card>
+        <v-card-title class="headline">确认删除？</v-card-title>
+        <v-card-text>点击确认将永久删除项目</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" flat @click.native="deleteProject">确认</v-btn>
+          <v-btn color="darken-1" flat @click.native="dialog = false">取消</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -57,6 +69,7 @@
           (v) => v.length <= 200 || '项目描述长度不能超过200个字符'
         ],
         loading:false,
+        dialog:false
       }
     },
     computed:{
@@ -82,8 +95,9 @@
           name:this.name,
           port:this.port,
           desc:this.desc
-        }).then(res => {
+        }).then(newDoc => {
           this.loading = false
+          this.$store.commit('SET_ACTIVE_PROJECT',newDoc._id)
           this.$router.push('/home/new_service/null')
         }).catch(err => {
           this.loading = false
@@ -105,6 +119,15 @@
       },
       addService(){
         this.$router.push('/home/new_service/null')
+      },
+      deleteProject(){
+        this.dialog = false
+        this.$store.dispatch('REMOVE_PROJECT',this.activeProject).then(res => {
+          this.$messager.show('删除成功',{color:'success'})
+          this.$router.replace('/home/new/null')
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
       }
     },
     created(){

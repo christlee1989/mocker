@@ -1,13 +1,13 @@
 <template>
     <div class="nav-container">
         <div class="nav-block" v-for="(item,index) in data" :key="item.value">
-            <div class="nav" :class="{active:active === item.value}" @click="navClick(index,item.value)">
+            <div class="nav" :class="{active:active === item.value}" @click="navClick(index,item.value)" @contextmenu="onContextMenu(item.value)">
                 {{item.title}}
                 <i class="caret"></i>
             </div>
             <div class="nav-second-block" :style="{height:active === item.value ? (item.second.length || 1) * 40 + 'px' : 0}">
                 <template v-if="item.second.length">
-                  <div class="nav-second" v-for="(secondItem,secondIndex) in item.second" :class="{active:secondActive === secondItem._id}" @click="navClick(secondIndex,secondItem._id,'second')">{{secondItem.path}}</div>
+                  <div class="nav-second" v-for="(secondItem,secondIndex) in item.second" :class="{active:secondActive === secondItem._id}" @click="navClick(secondIndex,secondItem._id,'second')" @contextmenu="onContextMenu(secondItem._id,true)">{{secondItem.path}}</div>
                 </template>
                 <div class="nodata" v-else>暂无服务</div>
             </div>
@@ -51,6 +51,10 @@
                     this.secondActive = ''
                     this.$emit('click',index,value,secondFlag)
                 }
+            },
+            onContextMenu(value,second){
+//              this.navClick(undefined,value,second)
+              this.$emit('contextmenu',value,second)
             },
             reset(){
                 this.active = ''

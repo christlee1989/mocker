@@ -69,4 +69,14 @@ export default class ProjectDB{
       }
     })
   }
+
+  remove(id,cb){
+    this.db.remove({_id:id},{},(err,numRemoved) => {
+      if(!err){
+        cb(true)
+      }else{
+        cb(false)
+      }
+    })
+  }
 }

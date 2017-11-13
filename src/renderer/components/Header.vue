@@ -2,11 +2,17 @@
   <div class="header-container">
     <div class="left-box">
       <v-tooltip bottom>
-        <v-btn v-show="activeProject && projectServices.length" slot="activator" class="header-btn" icon large>
-          <v-icon large>play_arrow</v-icon>
+        <v-btn v-show="activeProject && projectServices.length" slot="activator" class="header-btn" icon large @click="toggleServer">
+          <v-icon large>{{isStart ? 'stop' : 'play_arrow'}}</v-icon>
         </v-btn>
-        <span>启动服务</span>
+        <span>{{isStart ? '停止服务' : '启动服务'}}</span>
       </v-tooltip>
+      <!--<v-tooltip bottom>-->
+        <!--<v-btn v-show="activeProject && projectServices.length" slot="activator" class="header-btn" icon large @click="stopServer">-->
+          <!--<v-icon large>play_arrow</v-icon>-->
+        <!--</v-btn>-->
+        <!--<span>停止服务</span>-->
+      <!--</v-tooltip>-->
     </div>
 
     <span class="header-title">{{title}}</span>
@@ -44,6 +50,14 @@
       },
       title(){
         return this.$store.state.common.title
+      },
+      startedServer(){
+        return this.$store.state.server.startedServer
+      },
+      isStart(){
+        return !!this.startedServer.find(id => {
+          return id === this.activeProject
+        })
       }
     },
     methods:{
@@ -58,6 +72,27 @@
 
         })
       },
+      startServer(){
+        this.$store.dispatch('startServer').then(res => {
+          this.$messager.show('开启服务成功',{color:'success'})
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
+      },
+      stopServer(){
+        this.$store.dispatch('stopServer').then(res => {
+          this.$messager.show('停止服务成功',{color:'success'})
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
+      },
+      toggleServer(){
+        if(this.isStart){
+          this.stopServer()
+        }else{
+          this.startServer()
+        }
+      }
     }
   }
 

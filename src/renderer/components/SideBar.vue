@@ -17,7 +17,7 @@
       </v-tooltip>
     </div>
 
-    <Navbars ref="navbar" :data="fmtProjects" v-if="projects.length" @click="navClick"></Navbars>
+    <Navbars ref="navbar" :data="fmtProjects" v-if="projects.length" @click="navClick" @contextmenu="onContextMenu"></Navbars>
     <div v-if="loaded && !projects.length" class="secondary--text text-xs-center body-2 noproject">暂无项目</div>
     <Loading v-if="!loaded"></Loading>
 
@@ -29,6 +29,18 @@
         <span>打开日志监控</span>
       </v-tooltip>
     </div>
+
+    <v-dialog v-model="dialog" persistent>
+      <v-card>
+        <v-card-title class="headline">确认删除？</v-card-title>
+        <v-card-text>点击确认将永久删除{{secondFlag ? '服务' : '项目'}}</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" flat @click.native="deleteItem">确认</v-btn>
+          <v-btn color="darken-1" flat @click.native="dialog = false">取消</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -38,6 +50,8 @@
    */
   import Navbars from './common/Navbar.vue'
   import Loading from './common/Load.vue'
+  import {remote} from 'electron'
+  const {Menu,MenuItem} = remote
 
   export default{
     components:{
@@ -46,7 +60,12 @@
     },
     data(){
       return {
-        loaded:false
+        dialog:false,
+        loaded:false,
+        contextMenuValue:'',
+        projectMenu:null,
+        serviceMenu:null,
+        secondFlag:false
       }
     },
     computed:{
@@ -67,6 +86,9 @@
       },
       activeService(){
         return this.$store.state.project.activeService
+      },
+      activeProject(){
+        return this.$store.state.project.activeProject
       }
     },
     methods:{
@@ -94,6 +116,66 @@
         }).catch(err => {
           this.$messager.show(err,{color:'error'})
         })
+      },
+      onContextMenu(value,secondFlag){
+        this.contextMenuValue = value
+        this.secondFlag = secondFlag
+        if(!secondFlag){
+          this.openProjectMenu()
+        }else{
+          this.openServiceMenu()
+        }
+      },
+      openProjectMenu(){
+        if(!this.projectMenu){
+          this.projectMenu = new Menu()
+          this.projectMenu.append(new MenuItem({
+            label:'添加服务',
+            click:() => {
+              this.$router.replace('/home/new_service/null')
+            }
+          }))
+          this.projectMenu.append(new MenuItem({type:'separator'}))
+          this.projectMenu.append(new MenuItem({
+            label:'删除',
+            click:() => {
+              this.dialog = true
+            }
+          }))
+        }
+
+        this.projectMenu.popup(remote.getCurrentWindow())
+      },
+      openServiceMenu(){
+        if(!this.serviceMenu){
+          this.serviceMenu = new Menu()
+          this.serviceMenu.append(new MenuItem({
+            label:'删除',
+            click:() => {
+              this.dialog = true
+            }
+          }))
+        }
+
+        this.serviceMenu.popup(remote.getCurrentWindow())
+      },
+      deleteItem(){
+        this.dialog = false
+        if(this.secondFlag){
+          this.$store.dispatch('REMOVE_SERVICE',this.contextMenuValue).then(res => {
+            this.$messager.show('删除成功',{color:'success'})
+            this.$router.replace('/home/new_service/null')
+          }).catch(err => {
+            this.$messager.show(err,{color:'error'})
+          })
+        }else{
+          this.$store.dispatch('REMOVE_PROJECT',this.contextMenuValue).then(res => {
+            this.$messager.show('删除成功',{color:'success'})
+            this.$router.replace('/home/new/null')
+          }).catch(err => {
+            this.$messager.show(err,{color:'error'})
+          })
+        }
       }
     },
     created(){
@@ -107,6 +189,9 @@
     watch:{
       activeService(newVal,oldVal){
         this.$refs.navbar.setSecondActive(newVal)
+      },
+      activeProject(newVal,oldVal){
+        this.$refs.navbar.setActive(newVal)
       }
     }
   }

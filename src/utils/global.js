@@ -15,7 +15,8 @@ export default {
       const config = new Config({name:Const.CONFIG_NAME})
       global[globalObjName] = {
         config,
-        [Const.DATA_PATH_KEY]:config.get(Const.DATA_PATH_KEY,Path.join(app.getPath('appData'),'mocker'))
+        [Const.DATA_PATH_KEY]:config.get(Const.DATA_PATH_KEY,Path.join(app.getPath('appData'),'mocker')),
+        serverPool:{}
       }
     }
   },

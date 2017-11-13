@@ -55,6 +55,15 @@ const mutations = {
       return item._id === id
     })
     state.services[state.activeProject].splice(idx,1)
+  },
+  REMOVE_SERVICES(state,pid){
+    state.services[pid] = []
+  },
+  REMOVE_PROJECT(state,id){
+    let idx = state.projects.findIndex(item => {
+      return item._id === id
+    })
+    state.projects.splice(idx,1)
   }
 }
 
@@ -154,6 +163,36 @@ const actions = {
         }else{
           reject('删除服务出错')
         }
+      })
+    })
+  },
+  REMOVE_SERVICE_BY_PID({commit},pid){
+    return new Promise((resolve,reject) => {
+      DB.getDB('service').removeByPid(pid,flag => {
+        if(flag){
+          commit('REMOVE_SERVICES',pid)
+          commit('SET_ACTIVE_SERVICE','')
+          resolve(true)
+        }else{
+          reject('删除服务出错')
+        }
+      })
+    })
+  },
+  REMOVE_PROJECT({commit,dispatch},id){
+    return new Promise((resolve,reject) => {
+      dispatch('REMOVE_SERVICE_BY_PID',id).then(res => {
+        DB.getDB('project').remove(id,flag => {
+          if(flag){
+            commit('REMOVE_PROJECT',id)
+            commit('SET_ACTIVE_PROJECT','')
+            resolve(true)
+          }else{
+            reject('删除项目出错')
+          }
+        })
+      }).catch(err => {
+        reject(err)
       })
     })
   },

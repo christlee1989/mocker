@@ -95,4 +95,14 @@ export default class ServiceDB{
       }
     })
   }
+
+  removeByPid(pid,cb){
+    this.db.remove({pid:pid},{},(err,numRemoved) => {
+      if(!err){
+        cb(true)
+      }else{
+        cb(false)
+      }
+    })
+  }
 }

@@ -23,9 +23,9 @@
     timeout:3000,
     top:true,
     bottom:false,
-    right:false,
+    right:true,
     left:false,
-    multiLine:false,
+    multiLine:true,
     vertical:false,
     color:'info'
   }
@@ -36,9 +36,9 @@
         timeout:3000,
         top:true,
         bottom:false,
-        right:false,
+        right:true,
         left:false,
-        multiLine:false,
+        multiLine:true,
         vertical:false,
         showMsg:false,
         text:'',
