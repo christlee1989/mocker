@@ -17,7 +17,7 @@
       </v-tooltip>
     </div>
 
-    <Navbars ref="navbar" :data="fmtProjects" v-if="projects.length" @click="navClick" @contextmenu="onContextMenu"></Navbars>
+    <Navbars ref="navbar" :data="fmtProjects" v-if="projects.length" @click="navClick" @contextmenu="onContextMenu" @add="addService" @delete="deleteProject"></Navbars>
     <div v-if="loaded && !projects.length" class="secondary--text text-xs-center body-2 noproject">暂无项目</div>
     <Loading v-if="!loaded"></Loading>
 
@@ -97,18 +97,23 @@
       },
       navClick(index,value,secondFlag){
         if(secondFlag){
-          this.$store.commit('SET_ACTIVE_SERVICE',value)
-          this.$router.push(`/home/new_service/${value}`)
+          this.serviceClick(value)
         }else{
-          this.$store.commit('SET_ACTIVE_PROJECT',value)
-          this.$router.push(`/home/new/${value}`)
-          this.$store.dispatch('GET_SERVICES').then(res => {
-
-          }).catch(err => {
-            this.$messager.show(err,{color:'error'})
-          })
-
+          this.projectClick(value)
         }
+      },
+      serviceClick(value){
+        this.$store.commit('SET_ACTIVE_SERVICE',value)
+        this.$router.push(`/home/new_service/${value}`)
+      },
+      projectClick(value){
+        this.$store.commit('SET_ACTIVE_PROJECT',value)
+        this.$router.push(`/home/new/${value}`)
+        this.$store.dispatch('GET_SERVICES').then(res => {
+
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
       },
       importJson(){
         this.$store.dispatch('IMPORT_JSON').then(res => {
@@ -132,7 +137,12 @@
           this.projectMenu.append(new MenuItem({
             label:'添加服务',
             click:() => {
-              this.$router.replace('/home/new_service/null')
+              this.$store.commit('SET_ACTIVE_PROJECT',this.contextMenuValue)
+              this.$store.dispatch('GET_SERVICES').then(res => {
+                this.$router.replace('/home/new_service/null')
+              }).catch(err => {
+                this.$messager.show(err,{color:'error'})
+              })
             }
           }))
           this.projectMenu.append(new MenuItem({type:'separator'}))
@@ -176,6 +186,18 @@
             this.$messager.show(err,{color:'error'})
           })
         }
+      },
+      addService(value){
+        this.$store.commit('SET_ACTIVE_PROJECT',value)
+        this.$store.dispatch('GET_SERVICES').then(res => {
+          this.$router.replace('/home/new_service/null')
+        }).catch(err => {
+          this.$messager.show(err,{color:'error'})
+        })
+      },
+      deleteProject(value){
+        this.contextMenuValue = value
+        this.dialog = true
       }
     },
     created(){
